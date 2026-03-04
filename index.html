@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atmosfera - Cinematic Weather Experience</title>
+  
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.svg">
+  
+  <meta name="theme-color" content="#4facfe">
+  <meta name="description" content="Experience weather like never before with cinematic animations and AI recommendations">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Particle Canvas Background -->
+  <canvas id="weatherCanvas"></canvas>
+  
+  <!-- Main Container -->
+  <div class="app-container">
+    <!-- Header with Search -->
+    <header class="glass-header">
+      <div class="logo">
+        <span class="logo-text">ATMOSFERA</span>
+        <div class="logo-dot"></div>
+      </div>
+      
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search city..." class="search-input">
+        <button id="searchBtn" class="icon-btn">
+          <img src="icons/search.svg" alt="Search" width="20" height="20">
+        </button>
+        <button id="locationBtn" class="icon-btn">
+          <img src="icons/location.svg" alt="Use my location" width="20" height="20">
+        </button>
+      </div>
+      
+      <button id="soundToggle" class="icon-btn sound-btn">
+        <img src="icons/sound-on.svg" id="soundIcon" alt="Sound on" width="20" height="20">
+      </button>
+    </header>
+
+    <!-- Main Weather Card -->
+    <main class="weather-card" id="weatherCard">
+      <!-- Loading State -->
+      <div id="loadingState" class="loading-state">
+        <div class="loader"></div>
+        <p>Listening to the sky...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorState" class="error-state hidden">
+        <div class="error-icon">🌧️</div>
+        <p id="errorMessage">City not found</p>
+        <button id="retryBtn" class="retry-btn">Try Again</button>
+      </div>
+
+      <!-- Weather Content -->
+      <div id="weatherContent" class="weather-content hidden">
+        <!-- Location and Time -->
+        <div class="location-section">
+          <h2 id="cityName">Loading...</h2>
+          <p id="localTime" class="local-time"></p>
+        </div>
+
+        <!-- Main Temperature -->
+        <div class="temp-section">
+          <div class="temp-display">
+            <span id="temperature">--</span>
+            <span class="temp-unit">°C</span>
+          </div>
+          <div class="weather-condition">
+            <img id="weatherIcon" src="" alt="" class="weather-icon">
+            <span id="condition">--</span>
+          </div>
+        </div>
+
+        <!-- AI Recommendation Card -->
+        <div class="ai-recommendation" id="aiRecommendation">
+          <div class="ai-header">
+            <span class="ai-badge">AI STYLIST</span>
+            <span class="ai-emoji">🤖</span>
+          </div>
+          <p id="aiMessage">Loading personalized recommendation...</p>
+        </div>
+
+        <!-- Quick Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card" onclick="this.classList.toggle('flipped')">
+            <div class="stat-front">
+              <img src="icons/humidity.svg" alt="Humidity" width="24" height="24">
+              <span class="stat-value" id="humidity">--%</span>
+              <span class="stat-label">Humidity</span>
+            </div>
+            <div class="stat-back">
+              <span class="stat-detail">Dew point: <span id="dewPoint">--°C</span></span>
+            </div>
+          </div>
+
+          <div class="stat-card" onclick="this.classList.toggle('flipped')">
+            <div class="stat-front">
+              <img src="icons/wind.svg" alt="Wind" width="24" height="24">
+              <span class="stat-value" id="windSpeed">-- km/h</span>
+              <span class="stat-label">Wind</span>
+            </div>
+            <div class="stat-back">
+              <span class="stat-detail">Gusts: <span id="windGust">-- km/h</span></span>
+            </div>
+          </div>
+
+          <div class="stat-card" onclick="this.classList.toggle('flipped')">
+            <div class="stat-front">
+              <img src="icons/pressure.svg" alt="Pressure" width="24" height="24">
+              <span class="stat-value" id="pressure">-- hPa</span>
+              <span class="stat-label">Pressure</span>
+            </div>
+            <div class="stat-back">
+              <span class="stat-detail" id="pressureTrend">--</span>
+            </div>
+          </div>
+
+          <div class="stat-card" onclick="this.classList.toggle('flipped')">
+            <div class="stat-front">
+              <img src="icons/uv-index.svg" alt="UV Index" width="24" height="24">
+              <span class="stat-value" id="uvIndex">--</span>
+              <span class="stat-label">UV Index</span>
+            </div>
+            <div class="stat-back">
+              <div class="uv-meter">
+                <div class="uv-fill" id="uvFill" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card" onclick="this.classList.toggle('flipped')">
+            <div class="stat-front">
+              <img src="icons/visibility.svg" alt="Visibility" width="24" height="24">
+              <span class="stat-value" id="visibility">-- km</span>
+              <span class="stat-label">Visibility</span>
+            </div>
+            <div class="stat-back">
+              <span class="stat-detail" id="visibilityDesc">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sun Path -->
+        <div class="sun-path-container">
+          <div class="sun-path">
+            <div class="sun-position" id="sunPosition" style="left: 50%">
+              <img src="icons/sunrise.svg" alt="Sun" width="20" height="20">
+            </div>
+            <div class="sun-arc"></div>
+            <div class="sun-times">
+              <span id="sunrise">--:--</span>
+              <span id="sunset">--:--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hourly Forecast -->
+        <div class="hourly-section">
+          <h3>Hourly Forecast</h3>
+          <div class="hourly-scroll" id="hourlyForecast">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <!-- Weekly Forecast -->
+        <div class="weekly-section">
+          <h3>7-Day Forecast</h3>
+          <div class="weekly-grid" id="weeklyForecast">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Install Prompt -->
+    <div id="installContainer" class="install-container hidden">
+      <button id="installBtn" class="install-btn">
+        <span>📲</span> Install Atmosfera
+      </button>
+    </div>
+  </div>
+
+  <!-- External JavaScript -->
+   <script src="config.js"></script>
+  <script src="script.js"></script>
+  
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('ServiceWorker registered'))
+          .catch(err => console.log('ServiceWorker registration failed'));
+      });
+    }
+  </script>
+</body>
+</html>

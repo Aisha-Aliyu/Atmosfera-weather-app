@@ -1,0 +1,20 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="weatherGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="32" fill="url(#weatherGrad)"/>
+  <circle cx="96" cy="86" r="30" fill="#FFE55C" filter="url(#glow)"/>
+  <path d="M146 126C146 144.5 131.5 156 112 156H70C51.5 156 36 141.5 36 123C36 104.5 49.5 91 68 91C68 73 82.5 56 104 56C125.5 56 140 71.5 140 93C156 93 168 105 168 121C168 137 156 146 146 126Z" fill="white" fill-opacity="0.9"/>
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
