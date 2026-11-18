@@ -1,17 +1,19 @@
 /* style.css - Atmosfera Weather App */
 
 :root {
-  /* Dynamic color variables - will be updated by JS based on weather */
-  --primary-hue: 210;
-  --primary-color: hsl(var(--primary-hue), 100%, 65%);
-  --secondary-color: hsl(calc(var(--primary-hue) + 40), 80%, 60%);
-  --accent-color: hsl(calc(var(--primary-hue) - 40), 90%, 65%);
-  --bg-gradient-start: hsla(var(--primary-hue), 80%, 20%, 0.8);
-  --bg-gradient-end: hsla(calc(var(--primary-hue) + 20), 70%, 15%, 0.9);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
+  /* Palette: Cadet Blue and Iced Mint */
+  --cadet-blue: #5E9EA0;
+  --iced-mint: #F0F5DF;
+  --primary-hue: 182; /* still set by script.js, no longer used for colour */
+  --primary-color: var(--iced-mint);
+  --secondary-color: var(--iced-mint);
+  --accent-color: var(--iced-mint);
+  --bg-gradient-start: var(--cadet-blue);
+  --bg-gradient-end: var(--cadet-blue);
+  --text-primary: var(--iced-mint);
+  --text-secondary: rgba(240, 245, 223, 0.75);
+  --glass-bg: rgba(240, 245, 223, 0.12);
+  --glass-border: rgba(240, 245, 223, 0.25);
 }
 
 * {
@@ -21,6 +23,7 @@
 }
 
 body {
+  background: var(--cadet-blue);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
@@ -87,9 +90,7 @@ body {
   font-weight: 800;
   font-size: 1.5rem;
   letter-spacing: 2px;
-  background: linear-gradient(135deg, #fff, var(--primary-color));
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--iced-mint);
 }
 
 .logo-dot {
@@ -115,27 +116,27 @@ body {
 
 .search-input {
   flex: 1;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(240, 245, 223, 0.15);
   border: 1px solid var(--glass-border);
   border-radius: 30px;
   padding: 10px 20px;
-  color: white;
+  color: var(--iced-mint);
   font-size: 1rem;
   transition: all 0.3s ease;
 }
 
 .search-input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(240, 245, 223, 0.25);
   border-color: var(--primary-color);
 }
 
 .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(240, 245, 223, 0.5);
 }
 
 .icon-btn {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(240, 245, 223, 0.15);
   border: 1px solid var(--glass-border);
   border-radius: 50%;
   width: 40px;
@@ -148,7 +149,7 @@ body {
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(240, 245, 223, 0.25);
   transform: scale(1.1);
   border-color: var(--primary-color);
 }
@@ -239,7 +240,7 @@ body {
   border: none;
   border-radius: 30px;
   padding: 12px 30px;
-  color: white;
+  color: var(--iced-mint);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -319,7 +320,7 @@ body {
 .weather-icon {
   width: 80px;
   height: 80px;
-  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 20px rgba(240, 245, 223, 0.3));
   animation: float 3s ease-in-out infinite;
 }
 
@@ -335,12 +336,12 @@ body {
 
 /* AI Recommendation Card */
 .ai-recommendation {
-  background: linear-gradient(135deg, rgba(79, 172, 254, 0.3), rgba(0, 242, 254, 0.3));
+  background: rgba(240, 245, 223, 0.15);
   border-radius: 20px;
   padding: 20px;
   margin-bottom: 30px;
   backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(240, 245, 223, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -355,7 +356,7 @@ body {
   background: linear-gradient(
     45deg,
     transparent,
-    rgba(255, 255, 255, 0.1),
+    rgba(240, 245, 223, 0.1),
     transparent
   );
   transform: rotate(45deg);
@@ -375,7 +376,7 @@ body {
 }
 
 .ai-badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(240, 245, 223, 0.2);
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -514,7 +515,7 @@ body {
   left: 0;
   right: 0;
   height: 60px;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border: 2px dashed rgba(240, 245, 223, 0.3);
   border-top: none;
   border-radius: 0 0 100px 100px;
 }
@@ -571,7 +572,7 @@ body {
 
 .hourly-item {
   min-width: 80px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(240, 245, 223, 0.1);
   border-radius: 20px;
   padding: 15px 10px;
   text-align: center;
@@ -580,7 +581,7 @@ body {
 }
 
 .hourly-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(240, 245, 223, 0.2);
   transform: translateY(-5px);
 }
 
@@ -610,7 +611,7 @@ body {
 }
 
 .weekly-item {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(240, 245, 223, 0.1);
   border-radius: 15px;
   padding: 15px;
   text-align: center;
@@ -618,7 +619,7 @@ body {
 }
 
 .weekly-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(240, 245, 223, 0.2);
   transform: translateY(-3px);
 }
 
@@ -660,7 +661,7 @@ body {
   border: none;
   border-radius: 50px;
   padding: 15px 30px;
-  color: white;
+  color: var(--iced-mint);
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
@@ -729,4 +730,14 @@ body {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Cadet blue text on the iced mint buttons, and a darker back for flipped stat cards */
+.retry-btn,
+.install-btn {
+  color: var(--cadet-blue);
+}
+
+.stat-back {
+  background: #4A8486;
 }

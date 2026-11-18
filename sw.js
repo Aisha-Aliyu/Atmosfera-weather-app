@@ -1,6 +1,7 @@
 // sw.js - Service Worker for offline caching
 
-const CACHE_NAME = 'atmosfera-v1';
+// New name so returning visitors drop the old cached files
+const CACHE_NAME = 'atmosfera-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -34,13 +35,14 @@ self.addEventListener('install', event => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting())
   );
 });
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
-  // Skip API calls
-  if (event.request.url.includes('api.openweathermap.org')) {
+  // Only this site's own files are cached; weather requests always go to the network
+  if (new URL(event.request.url).origin !== self.location.origin) {
     return;
   }
   
@@ -67,6 +69,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });

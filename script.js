@@ -2,8 +2,10 @@
 
 (function() {
   // ---------- Configuration ----------
-  const API_KEY = CONFIG.WEATHER_API_KEY; 
-  const BASE_URL = 'https://api.openweathermap.org/data/2.5';
+  // Open-Meteo needs no API key (the old OpenWeather key lived in a config.js that was
+  // never deployed, so the page stopped on the loader)
+  const GEO_URL = 'https://geocoding-api.open-meteo.com/v1/search';
+  const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
   
   // ---------- DOM Elements ----------
   const canvas = document.getElementById('weatherCanvas');
@@ -252,7 +254,7 @@
       ctx.save();
       switch(this.type) {
         case 'rain':
-          ctx.strokeStyle = `rgba(120, 180, 255, ${this.opacity})`;
+          ctx.strokeStyle = `rgba(240, 245, 223, ${this.opacity})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(this.x, this.y);
@@ -322,26 +324,7 @@
   function animateParticles() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw gradient background based on time of day
-    const hour = new Date().getHours();
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    
-    if (hour < 6 || hour > 18) {
-      // Night
-      gradient.addColorStop(0, 'rgba(10, 10, 30, 0.8)');
-      gradient.addColorStop(1, 'rgba(20, 20, 40, 0.8)');
-    } else if (hour < 8 || hour > 16) {
-      // Golden hour
-      gradient.addColorStop(0, 'rgba(255, 180, 100, 0.4)');
-      gradient.addColorStop(1, 'rgba(200, 100, 50, 0.4)');
-    } else {
-      // Day
-      gradient.addColorStop(0, 'rgba(100, 180, 255, 0.3)');
-      gradient.addColorStop(1, 'rgba(150, 200, 255, 0.3)');
-    }
-    
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // The page colour (cadet blue) shows through; only the particles are drawn
     
     particles.forEach(particle => {
       particle.update();
@@ -361,12 +344,7 @@
     
     const root = document.documentElement;
     root.style.setProperty('--primary-hue', scheme.primary);
-    
-    // Update theme color meta tag
-    document.querySelector('meta[name="theme-color"]').setAttribute(
-      'content', 
-      `hsl(${scheme.primary}, 100%, 65%)`
-    );
+
   }
   
   // ---------- AI Recommendation Generator ----------
@@ -434,80 +412,117 @@
     sunPosition.style.left = `${position}%`;
   }
   
+  // ---------- Weather data ----------
+  // Open-Meteo's answers are reshaped into the format the rest of this file was written
+  // for (OpenWeather's), so the display code stays the same.
+
+  // WMO weather code as [main, description, OpenWeather icon number]
+  function describeCode(code) {
+    if (code === 0) return ['Clear', 'clear sky', '01'];
+    if (code === 1) return ['Clouds', 'mainly clear', '02'];
+    if (code === 2) return ['Clouds', 'partly cloudy', '03'];
+    if (code === 3) return ['Clouds', 'overcast', '04'];
+    if (code === 45 || code === 48) return ['Fog', 'fog', '50'];
+    if (code >= 51 && code <= 57) return ['Drizzle', 'drizzle', '09'];
+    if (code >= 61 && code <= 67) return ['Rain', code >= 65 ? 'heavy rain' : 'rain', '10'];
+    if (code >= 71 && code <= 77) return ['Snow', 'snow', '13'];
+    if (code >= 80 && code <= 82) return ['Rain', 'rain showers', '09'];
+    if (code === 85 || code === 86) return ['Snow', 'snow showers', '13'];
+    if (code >= 95) return ['Thunderstorm', 'thunderstorm', '11'];
+    return ['Clouds', 'cloudy', '03'];
+  }
+
+  function conditionFor(code, isDay) {
+    const [main, description, icon] = describeCode(code);
+    return [{ main, description, icon: `${icon}${isDay ? 'd' : 'n'}` }];
+  }
+
+  async function getJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('The weather service is unavailable. Please try again.');
+    return response.json();
+  }
+
+  async function loadWeather(lat, lon, name, country) {
+    const params = new URLSearchParams({
+      latitude: lat,
+      longitude: lon,
+      current: 'temperature_2m,relative_humidity_2m,is_day,weather_code,pressure_msl,wind_speed_10m,wind_gusts_10m',
+      hourly: 'temperature_2m,weather_code,is_day,visibility,uv_index',
+      daily: 'sunrise,sunset',
+      wind_speed_unit: 'ms',
+      timezone: 'auto',
+      timeformat: 'unixtime',
+      forecast_days: '6',
+    });
+    const data = await getJson(`${FORECAST_URL}?${params}`);
+    const { current, hourly, daily } = data;
+    const now = Math.floor(Date.now() / 1000);
+    let hour = hourly.time.findIndex((t) => t > now) - 1;
+    if (hour < 0) hour = 0;
+
+    const weather = {
+      name,
+      sys: { country, sunrise: daily.sunrise[0], sunset: daily.sunset[0] },
+      timezone: data.utc_offset_seconds,
+      coord: { lat, lon },
+      main: {
+        temp: current.temperature_2m + 273.15,
+        humidity: current.relative_humidity_2m,
+        pressure: Math.round(current.pressure_msl),
+      },
+      weather: conditionFor(current.weather_code, current.is_day),
+      wind: { speed: current.wind_speed_10m, gust: current.wind_gusts_10m },
+      visibility: hourly.visibility[hour] ?? 10000,
+    };
+
+    // 3-hour steps over the next 5 days, like OpenWeather's forecast
+    const list = [];
+    for (let i = hour + 1; i < hourly.time.length && list.length < 40; i += 3) {
+      list.push({
+        dt: hourly.time[i],
+        main: { temp: hourly.temperature_2m[i] + 273.15 },
+        weather: conditionFor(hourly.weather_code[i], hourly.is_day[i]),
+      });
+    }
+
+    return { weather, forecastData: { list }, uv: { value: hourly.uv_index[hour] ?? 0 } };
+  }
+
+  function showWeather({ weather, forecastData, uv }) {
+    currentWeather = weather;
+    forecast = forecastData;
+    updateUI(weather, forecastData, uv);
+    hideLoading();
+  }
+
   // ---------- Fetch Weather Data ----------
   async function fetchWeather(city) {
     showLoading();
-    
     try {
-      // Current weather
-      const weatherResponse = await fetch(
-        `${BASE_URL}/weather?q=${city}&appid=${API_KEY}`
-      );
-      
-      if (!weatherResponse.ok) {
-        throw new Error('City not found');
-      }
-      
-      const weatherData = await weatherResponse.json();
-      
-      // Forecast
-      const forecastResponse = await fetch(
-        `${BASE_URL}/forecast?q=${city}&appid=${API_KEY}`
-      );
-      const forecastData = await forecastResponse.json();
-      
-      // UV Index (requires coordinates)
-      const uvResponse = await fetch(
-        `${BASE_URL}/uvi?lat=${weatherData.coord.lat}&lon=${weatherData.coord.lon}&appid=${API_KEY}`
-      );
-      const uvData = await uvResponse.json();
-      
-      currentWeather = weatherData;
-      forecast = forecastData;
-      
-      updateUI(weatherData, forecastData, uvData);
-      hideLoading();
-      
+      const geo = await getJson(`${GEO_URL}?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+      const place = geo.results?.[0];
+      if (!place) throw new Error('City not found');
+      showWeather(await loadWeather(place.latitude, place.longitude, place.name, place.country_code ?? ''));
     } catch (error) {
       showError(error.message);
     }
   }
-  
+
   // ---------- Fetch by Coordinates ----------
   async function fetchWeatherByCoords(lat, lon) {
     showLoading();
-    
     try {
-      const weatherResponse = await fetch(
-        `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-      );
-      const weatherData = await weatherResponse.json();
-      
-      const forecastResponse = await fetch(
-        `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-      );
-      const forecastData = await forecastResponse.json();
-      
-      const uvResponse = await fetch(
-        `${BASE_URL}/uvi?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-      );
-      const uvData = await uvResponse.json();
-      
-      currentWeather = weatherData;
-      forecast = forecastData;
-      
-      updateUI(weatherData, forecastData, uvData);
-      hideLoading();
-      
+      showWeather(await loadWeather(lat, lon, 'Your location', ''));
     } catch (error) {
       showError('Failed to fetch weather for your location');
     }
   }
-  
+
   // ---------- Update UI ----------
   function updateUI(weather, forecast, uv) {
     // Basic info
-    cityName.textContent = `${weather.name}, ${weather.sys.country}`;
+    cityName.textContent = weather.sys.country ? `${weather.name}, ${weather.sys.country}` : weather.name;
     localTime.textContent = getLocalTime(weather.timezone);
     
     // Temperature
