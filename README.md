@@ -1,53 +1,28 @@
-# Atmosfera - Cinematic Weather Experience 🌤️
+# Atmosfera
 
-A next-generation weather app that transforms weather data into an immersive visual experience with cinematic animations, AI-powered recommendations, and mood-based color schemes.
+A weather app that draws the weather instead of only listing it. Rain, snow, clouds and sun are animated on a canvas behind the forecast, and a stylist card suggests what to wear.
 
-## ✨ Unique Features
+Live demo: https://atmosferaa.vercel.app
 
-### 🎬 Cinematic Particle System
-- Dynamic particle effects that match current weather conditions
-- Rain drops, snow flakes, floating clouds, and sparkling sun
-- Smooth 60fps animations with HTML5 Canvas
+## Features
 
-### 🤖 AI Stylist Recommendations
-- Smart clothing suggestions based on temperature and conditions
-- Context-aware tips (rainy, snowy, stormy special cases)
-- Rotating messages for variety
+- Animated rain, snow, clouds and sun on an HTML canvas, matched to the current conditions, with lightning during thunderstorms.
+- Outfit suggestions based on the temperature and conditions, with extra tips for rain and storms.
+- Stat cards that flip over to show more detail, such as the dew point and wind gusts.
+- A sun path arc that shows where the sun is between sunrise and sunset.
+- Humidity, wind, pressure, visibility and a UV meter.
+- An hourly forecast.
+- Search for any city, or use your current location.
+- Installs as a PWA.
 
-### 🎨 Mood-Based Color Schemes
-- Dynamic color themes that change with weather
-- Golden hour, stormy night, winter wonderland moods
-- Smooth transitions between themes
+## Weather data
 
-### 🃏 Interactive Flip Cards
-- Flip animations on weather metrics
-- Additional details on the back (dew point, gusts, etc.)
-- Haptic-like feedback on interaction
+Weather and city search come from [Open-Meteo](https://open-meteo.com). It's free and doesn't need an API key, so there's nothing to set up.
 
-### 🌅 Sun Path Visualization
-- Real-time sun position arc
-- Sunrise/sunset times with visual representation
-- Dynamic positioning based on time of day
+## Run it locally
 
-### 📊 Rich Data Visualization
-- UV index with color-coded meter
-- Pressure trends with indicators
-- Visibility quality descriptions
-
-### 📱 PWA Ready
-- Install on any device
-- Works offline
-- Native app-like experience
-
-## 🚀 Getting Started
-
-### Prerequisites
-- OpenWeatherMap API key (free tier works)
-- Modern browser with JavaScript enabled
-
-### Installation
-
-1. Clone the repository
 ```bash
-git clone https://github.com/Aisha-Aliyu/atmosfera-weather-app.git
-cd atmosfera-weather-app
+git clone https://github.com/Aisha-Aliyu/Atmosfera-weather-app.git
+cd Atmosfera-weather-app
+npx serve
+```
